@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-Muslim Hate Speech Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #eee; }
+        .header { background: #16213e; padding: 20px; text-align: center; border-bottom: 2px solid #0f3460; }
+        .header h1 { color: #e94560; font-size: 28px; }
+        .header p { color: #aaa; margin-top: 5px; }
+        .stats { display: flex; justify-content: center; gap: 20px; padding: 20px; }
+        .stat-card { background: #16213e; padding: 20px; border-radius: 10px; text-align: center; min-width: 150px; border: 1px solid #0f3460; }
+        .stat-card h2 { font-size: 36px; color: #e94560; }
+        .stat-card p { color: #aaa; margin-top: 5px; }
+        .tweets-section { padding: 20px; max-width: 900px; margin: 0 auto; }
+        .tweets-section h3 { color: #e94560; margin-bottom: 15px; font-size: 20px; }
+        .tweet-card { background: #16213e; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #e94560; }
+        .tweet-card p { color: #eee; line-height: 1.5; }
+        .tweet-card .date { color: #aaa; font-size: 12px; margin-top: 8px; }
+        .status { text-align: center; padding: 10px; color: #aaa; font-size: 13px; }
+        .live-dot { display: inline-block; width: 8px; height: 8px; background: #00ff88; border-radius: 50%; margin-right: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ Anti-Muslim Hate Speech Dashboard</h1>
+        <p>Monitoring and detecting anti-muslim content in real time</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h2 id="total">0</h2>
+            <p>Flagged Posts</p>
+        </div>
+        <div class="stat-card">
+            <h2 id="last-updated">--</h2>
+            <p>Last Updated</p>
+        </div>
+    </div>
+
+    <div class="tweets-section">
+        <h3>🚨 Flagged Content</h3>
+        <div id="tweets-container">Loading...</div>
+    </div>
+
+    <div class="status">
+        <span class="live-dot"></span> Live — refreshing every 30 seconds
+    </div>
+
+    <script>
+        function loadTweets() {
+            fetch('/api/tweets')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('total').textContent = data.total_flagged;
+                    document.getElementById('last-updated').textContent = data.last_updated.split(' ')[1];
+                    
+                    const container = document.getElementById('tweets-container');
+                    if (data.tweets.length === 0) {
+                        container.innerHTML = '<p style="color:#aaa">No flagged content found.</p>';
+                        return;
+                    }
+                    container.innerHTML = data.tweets.map(t => `
+                        <div class="tweet-card">
+                            <p>${t.text}</p>
+                            <div class="date">📅 ${t.date}</div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        loadTweets();
+        setInterval(loadTweets, 30000);
+    </script>
+</body>
+</html>
